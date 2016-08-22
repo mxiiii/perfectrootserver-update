@@ -59,38 +59,42 @@ fi
 # ---------------------------------------------------------------------------------------- #
 ########################### Cert with mail UPDATE 
 # ---------------------------------------------------------------------------------------- #
-if [ "$CERT_UPDATE_MAIL" = '1' ]; then
+if [ $CERT_UPDATE_MAIL == '1' ] && [ $CERT_UPDATE == '0' ]; then
 	echo "${info} Update your SSL Certificate with Mailserver" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 	systemctl -q stop nginx.service >/dev/null 2>&1
 	cd ~/sources/letsencrypt >/dev/null 2>&1
 	./letsencrypt-auto --agree-tos --renew-by-default --standalone --email ${MYEMAIL} --rsa-key-size 4096 -d ${MYDOMAIN} -d www.${MYDOMAIN} -d mail.${MYDOMAIN} -d autodiscover.${MYDOMAIN} -d autoconfig.${MYDOMAIN} -d dav.${MYDOMAIN} certonly >/dev/null 2>&1
-	echo "${ok} Complete without fail" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
+	echo "${ok} Complete without fail : Update Certificate without mail Server" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
+else
+	echo "${error} CERT_UPDATE and CERT_UPDATE_MAIL are both activated, please check the config!" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 fi
 # ---------------------------------------------------------------------------------------- #
 ########################### Cert Without Mail UPDATE 
 # ---------------------------------------------------------------------------------------- #
-if [ "$CERT_UPDATE" = '1' ]; then
+if [ $CERT_UPDATE == '1' ] && [ $CERT_UPDATE_MAIL == '0' ]; then
 	echo "${info} Update your SSL Certificate" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 	service stop nginx >/dev/null 2>&1
 	cd ~/sources/letsencrypt >/dev/null 2>&1
 	./letsencrypt-auto --agree-tos --renew-by-default --standalone --email ${MYEMAIL} --rsa-key-size 4096 -d ${MYDOMAIN} -d www.${MYDOMAIN} certonly >/dev/null 2>&1
 	systemctl -q start nginx.service >/dev/null 2>&1
-	echo "${ok} Complete without fail" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
+	echo "${ok} Complete without fail : Update Certificate with mail Server" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
+else
+	echo "${error} CERT_UPDATE and CERT_UPDATE_MAIL are both activated, please check the config!" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 fi
 
 # ---------------------------------------------------------------------------------------- #
 ########################### UPDATE ROUNDCUBE
 # ---------------------------------------------------------------------------------------- #
-
 if [ "$ROUNDCUBE_UPDATE" = '1' ]; then
+	echo "${info} Update Roundcube" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 	cd /root/ >/dev/null 2>&1
 	wget https://github.com/roundcube/roundcubemail/releases/download/${ROUNDCUBE_VERSION}/roundcubemail-${ROUNDCUBE_VERSION}-complete.tar.gz >/dev/null 2>&1
 	tar xfvz roundcubemail-${ROUNDCUBE_VERSION}-complete.tar.gz >/dev/null 2>&1
-	cd cd roundcubemail-${ROUNDCUBE_VERSION} >/dev/null 2>&1
+	cd roundcubemail-${ROUNDCUBE_VERSION} >/dev/null 2>&1
 	bin/installto.sh /var/www/mail/rc >/dev/null 2>&1
-	rm /root/roundcubemail-${ROUNDCUBE_VERSION}/ -r >/dev/null 2>&1
-	rm /root/roundcubemail-${ROUNDCUBE_VERSION}-complete.tar.gz/ -r >/dev/null 2>&1
-	echo "${ok} Complete without fail" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
+	rm -r /root/roundcubemail-${ROUNDCUBE_VERSION}/  >/dev/null 2>&1
+	rm -f /root/roundcubemail-${ROUNDCUBE_VERSION}-complete.tar.gz/ >/dev/null 2>&1
+	echo "${ok} Complete without fail : Roundcube Update" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 fi
 
 # ---------------------------------------------------------------------------------------- #
@@ -167,6 +171,7 @@ if [ "$NGINX_UPDATE" = '1' ]; then
 	--with-openssl=$HOME/sources/openssl-${OPENSSL_VERSION} \
 	--add-module=$HOME/sources/ngx_pagespeed-release-${NPS_VERSION}-beta >/dev/null 2>&1
 	echo "${ok} Complete compile nginx" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
+	
 	# make the package
 	make >/dev/null 2>&1
 
