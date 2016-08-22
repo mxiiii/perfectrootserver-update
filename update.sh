@@ -37,14 +37,21 @@ if [ "$CONFIG_COMPLETED" != '1' ]; then
 	exit 1
 fi
 
-
 # ---------------------------------------------------------------------------------------- #
 ########################### ARE YOU Admin?
 # ---------------------------------------------------------------------------------------- #
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root"
    echo "${error} Update System" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
-   exit 1
+   
+fi
+
+# ---------------------------------------------------------------------------------------- #
+########################### Check if CERT_UPDATE and CERT_UPDATE_MAIL are both activated
+# ---------------------------------------------------------------------------------------- #
+if [ $CERT_UPDATE_MAIL == '1' ] && [ $CERT_UPDATE == '1' ]; then
+	echo "${error} CERT_UPDATE and CERT_UPDATE_MAIL are both activated, please check the config!" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
+	exit 1
 fi
 
 # ---------------------------------------------------------------------------------------- #
@@ -56,6 +63,7 @@ if [ "$SYSTEM_UPDATE" = '1' ]; then
 	apt-get upgrade -y >/dev/null 2>&1
 	echo "${ok} Complete without fail" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 fi
+
 # ---------------------------------------------------------------------------------------- #
 ########################### Cert with mail UPDATE 
 # ---------------------------------------------------------------------------------------- #
@@ -64,10 +72,10 @@ if [ $CERT_UPDATE_MAIL == '1' ] && [ $CERT_UPDATE == '0' ]; then
 	systemctl -q stop nginx.service >/dev/null 2>&1
 	cd ~/sources/letsencrypt >/dev/null 2>&1
 	./letsencrypt-auto --agree-tos --renew-by-default --standalone --email ${MYEMAIL} --rsa-key-size 4096 -d ${MYDOMAIN} -d www.${MYDOMAIN} -d mail.${MYDOMAIN} -d autodiscover.${MYDOMAIN} -d autoconfig.${MYDOMAIN} -d dav.${MYDOMAIN} certonly >/dev/null 2>&1
-	echo "${ok} Complete without fail : Update Certificate without mail Server" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
-else
-	echo "${error} CERT_UPDATE and CERT_UPDATE_MAIL are both activated, please check the config!" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
+	systemctl -q start nginx.service >/dev/null 2>&1
+	echo "${ok} Complete without fail : Update Certificate without mail Server" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'	
 fi
+
 # ---------------------------------------------------------------------------------------- #
 ########################### Cert Without Mail UPDATE 
 # ---------------------------------------------------------------------------------------- #
@@ -78,8 +86,6 @@ if [ $CERT_UPDATE == '1' ] && [ $CERT_UPDATE_MAIL == '0' ]; then
 	./letsencrypt-auto --agree-tos --renew-by-default --standalone --email ${MYEMAIL} --rsa-key-size 4096 -d ${MYDOMAIN} -d www.${MYDOMAIN} certonly >/dev/null 2>&1
 	systemctl -q start nginx.service >/dev/null 2>&1
 	echo "${ok} Complete without fail : Update Certificate with mail Server" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
-else
-	echo "${error} CERT_UPDATE and CERT_UPDATE_MAIL are both activated, please check the config!" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 fi
 
 # ---------------------------------------------------------------------------------------- #
