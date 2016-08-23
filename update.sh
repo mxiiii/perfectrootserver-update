@@ -196,7 +196,7 @@ if [ "$NGINX_UPDATE" = '1' ]; then
 	echo "${ok} Complete install nginx" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 
 	echo "${info} Restore Nginx Folder..." | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
-	cp -R /root/backup/nginx/* /etc/nginx/
+	cp -R /root/backup/$date/nginx/* /etc/nginx/
 	echo "${ok} Complete restore nginx" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 
 	echo "${info} Starting Nginx..." | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
