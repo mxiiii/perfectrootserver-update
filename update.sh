@@ -35,8 +35,8 @@ echo
 # ---------------------------------------------------------------------------------------- #
 ########################### READY TO GO?
 # ---------------------------------------------------------------------------------------- #
-if [ "$CONFIG_FinishedD" != '1' ]; then
-	echo "${error} Please check the updateconfig and set a valid value for the variable \"$(textb CONFIG_FinishedD)\" to continue." | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
+if [ "$CONFIG_COMPLETED" != '1' ]; then
+	echo "${error} Please check the updateconfig and set a valid value for the variable \"$(textb CONFIG_COMPLETED)\" to continue." | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 	exit 1
 fi
 
@@ -95,12 +95,12 @@ fi
 if [ "$ROUNDCUBE_UPDATE" = '1' ]; then
 	echo "${info} Update Roundcube" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 	cd /root/ >/dev/null 2>&1
-	wget https://github.com/roundcube/roundcubemail/releases/download/${ROUNDCUBE_VERSION}/roundcubemail-${ROUNDCUBE_VERSION}-Finished.tar.gz >/dev/null 2>&1
-	tar xfvz roundcubemail-${ROUNDCUBE_VERSION}-Finished.tar.gz >/dev/null 2>&1
+	wget https://github.com/roundcube/roundcubemail/releases/download/${ROUNDCUBE_VERSION}/roundcubemail-${ROUNDCUBE_VERSION}-complete.tar.gz >/dev/null 2>&1
+	tar xfvz roundcubemail-${ROUNDCUBE_VERSION}-complete.tar.gz >/dev/null 2>&1
 	cd roundcubemail-${ROUNDCUBE_VERSION} >/dev/null 2>&1
 	bin/installto.sh /var/www/mail/rc >/dev/null 2>&1
 	rm -r /root/roundcubemail-${ROUNDCUBE_VERSION}/  >/dev/null 2>&1
-	rm -f /root/roundcubemail-${ROUNDCUBE_VERSION}-Finished.tar.gz/ >/dev/null 2>&1
+	rm -f /root/roundcubemail-${ROUNDCUBE_VERSION}-complete.tar.gz/ >/dev/null 2>&1
 	echo "${ok} Finished: Roundcube Update" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 fi
 
