@@ -23,6 +23,9 @@ error="$(redb [ERROR] -)"
 fyi="$(pinkb [INFO] -)"
 ok="$(greenb [OKAY] -)"
 
+# let me, i need it to create backupfolder
+date=$(date +%d-%m-%y-%h-%m)
+
 echo
 echo "$(yellowb +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+)"
 echo " $(textb Perfect) $(textb Rootserver) $(textb Update) $(textb by)" "$(cyan REtender / Shoujii)"
@@ -41,9 +44,7 @@ fi
 ########################### ARE YOU Admin?
 # ---------------------------------------------------------------------------------------- #
 if [[ $EUID -ne 0 ]]; then
-   echo "This script must be run as root"
-   echo "${error} Update System" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
-   
+   echo "${error} This script must be run as root User" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 fi
 
 # ---------------------------------------------------------------------------------------- #
@@ -111,10 +112,14 @@ if [ "$NGINX_UPDATE" = '1' ]; then
 	systemctl -q stop nginx.service
 
 	echo "${info} Backup Nginx Folder..." | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
-	rm /root/backup/ -r >/dev/null 2>&1
-	mkdir /root/backup/ >/dev/null 2>&1
-	mkdir /root/backup/nginx/ >/dev/null 2>&1
-	cp -R /etc/nginx/* /root/backup/nginx/
+	#no delete /backup/ folder
+	if [ ! -d /root/backup/ ]; then
+		mkdir /root/backup/ >/dev/null 2>&1
+	fi
+
+	mkdir /root/backup/$date/ >/dev/null 2>&1
+	mkdir /root/backup/$date/nginx/ >/dev/null 2>&1
+	cp -R /etc/nginx/* /root/backup/$date/nginx/
 	echo "${ok} Complete for backup nginx" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 	cd ~/sources
 
