@@ -1,7 +1,7 @@
 #!/bin/bash
 # The perfect rootserver UPDATE
-# by Shoujii
-# https://github.com/mxiiii/perfect_update
+# by Shoujii and TakeThisBitch @ elitepvpers
+# Repo: https://github.com/shoujii/perfectrootserver-update
 # Based on https://github.com/zypr/perfectrootserver & https://github.com/mxiiii/perfect_update
 # Thanks to Zypr and and mxiiii
 # Compatible with Debian 8.x (jessie)
@@ -23,7 +23,7 @@ error="$(redb [ERROR] -)"
 fyi="$(pinkb [INFO] -)"
 ok="$(greenb [OKAY] -)"
 
-# let me, i need it to create backupfolder
+# Create $date for Nginx Backup
 date=$(date +%d-%m-%y-%h-%m)
 
 echo
@@ -35,8 +35,8 @@ echo
 # ---------------------------------------------------------------------------------------- #
 ########################### READY TO GO?
 # ---------------------------------------------------------------------------------------- #
-if [ "$CONFIG_COMPLETED" != '1' ]; then
-	echo "${error} Please check the updateconfig and set a valid value for the variable \"$(textb CONFIG_COMPLETED)\" to continue." | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
+if [ "$CONFIG_FinishedD" != '1' ]; then
+	echo "${error} Please check the updateconfig and set a valid value for the variable \"$(textb CONFIG_FinishedD)\" to continue." | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 	exit 1
 fi
 
@@ -62,7 +62,7 @@ if [ "$SYSTEM_UPDATE" = '1' ]; then
 	echo "${info} Update System" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 	apt-get update -y  >/dev/null 2>&1
 	apt-get upgrade -y >/dev/null 2>&1
-	echo "${ok} Complete without fail" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
+	echo "${ok} Finished: System Update" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 fi
 
 # ---------------------------------------------------------------------------------------- #
@@ -74,7 +74,7 @@ if [ $CERT_UPDATE_MAIL == '1' ] && [ $CERT_UPDATE == '0' ]; then
 	cd ~/sources/letsencrypt >/dev/null 2>&1
 	./letsencrypt-auto --agree-tos --renew-by-default --standalone --email ${MYEMAIL} --rsa-key-size 4096 -d ${MYDOMAIN} -d www.${MYDOMAIN} -d mail.${MYDOMAIN} -d autodiscover.${MYDOMAIN} -d autoconfig.${MYDOMAIN} -d dav.${MYDOMAIN} certonly >/dev/null 2>&1
 	systemctl -q start nginx.service >/dev/null 2>&1
-	echo "${ok} Complete without fail : Update Certificate without mail Server" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'	
+	echo "${ok} Finished: Update Certificate without mail Server" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'	
 fi
 
 # ---------------------------------------------------------------------------------------- #
@@ -82,11 +82,11 @@ fi
 # ---------------------------------------------------------------------------------------- #
 if [ $CERT_UPDATE == '1' ] && [ $CERT_UPDATE_MAIL == '0' ]; then
 	echo "${info} Update your SSL Certificate" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
-	service stop nginx >/dev/null 2>&1
+	systemctl -q stop nginx.service >/dev/null 2>&1
 	cd ~/sources/letsencrypt >/dev/null 2>&1
 	./letsencrypt-auto --agree-tos --renew-by-default --standalone --email ${MYEMAIL} --rsa-key-size 4096 -d ${MYDOMAIN} -d www.${MYDOMAIN} certonly >/dev/null 2>&1
 	systemctl -q start nginx.service >/dev/null 2>&1
-	echo "${ok} Complete without fail : Update Certificate with mail Server" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
+	echo "${ok} Finished: Update Certificate with mail Server" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 fi
 
 # ---------------------------------------------------------------------------------------- #
@@ -95,13 +95,13 @@ fi
 if [ "$ROUNDCUBE_UPDATE" = '1' ]; then
 	echo "${info} Update Roundcube" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 	cd /root/ >/dev/null 2>&1
-	wget https://github.com/roundcube/roundcubemail/releases/download/${ROUNDCUBE_VERSION}/roundcubemail-${ROUNDCUBE_VERSION}-complete.tar.gz >/dev/null 2>&1
-	tar xfvz roundcubemail-${ROUNDCUBE_VERSION}-complete.tar.gz >/dev/null 2>&1
+	wget https://github.com/roundcube/roundcubemail/releases/download/${ROUNDCUBE_VERSION}/roundcubemail-${ROUNDCUBE_VERSION}-Finished.tar.gz >/dev/null 2>&1
+	tar xfvz roundcubemail-${ROUNDCUBE_VERSION}-Finished.tar.gz >/dev/null 2>&1
 	cd roundcubemail-${ROUNDCUBE_VERSION} >/dev/null 2>&1
 	bin/installto.sh /var/www/mail/rc >/dev/null 2>&1
 	rm -r /root/roundcubemail-${ROUNDCUBE_VERSION}/  >/dev/null 2>&1
-	rm -f /root/roundcubemail-${ROUNDCUBE_VERSION}-complete.tar.gz/ >/dev/null 2>&1
-	echo "${ok} Complete without fail : Roundcube Update" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
+	rm -f /root/roundcubemail-${ROUNDCUBE_VERSION}-Finished.tar.gz/ >/dev/null 2>&1
+	echo "${ok} Finished: Roundcube Update" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 fi
 
 # ---------------------------------------------------------------------------------------- #
@@ -112,7 +112,7 @@ if [ "$NGINX_UPDATE" = '1' ]; then
 	systemctl -q stop nginx.service
 
 	echo "${info} Backup Nginx Folder..." | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
-	#no delete /backup/ folder
+	#do not delete /backup/ folder
 	if [ ! -d /root/backup/ ]; then
 		mkdir /root/backup/ >/dev/null 2>&1
 	fi
@@ -120,7 +120,7 @@ if [ "$NGINX_UPDATE" = '1' ]; then
 	mkdir /root/backup/$date/ >/dev/null 2>&1
 	mkdir /root/backup/$date/nginx/ >/dev/null 2>&1
 	cp -R /etc/nginx/* /root/backup/$date/nginx/
-	echo "${ok} Complete for backup nginx" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
+	echo "${ok} Finished: Nginx backup" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 	cd ~/sources
 
 	echo "${info} Downloading Nginx Pagespeed..." | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
@@ -129,7 +129,7 @@ if [ "$NGINX_UPDATE" = '1' ]; then
 	cd ngx_pagespeed-release-${NPS_VERSION}-beta/
 	wget https://dl.google.com/dl/page-speed/psol/${NPS_VERSION}.tar.gz >/dev/null 2>&1
 	tar -xzf ${NPS_VERSION}.tar.gz
-	echo "${ok} Complete pagespeed" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
+	echo "${ok} Finished: Pagespeed Update" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 	cd ~/sources
 
 	echo "${info} Downloading Nginx..." | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
@@ -181,7 +181,7 @@ if [ "$NGINX_UPDATE" = '1' ]; then
 	--with-cc-opt='-O2 -g -pipe -Wall -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic' \
 	--with-openssl=$HOME/sources/openssl-${OPENSSL_VERSION} \
 	--add-module=$HOME/sources/ngx_pagespeed-release-${NPS_VERSION}-beta >/dev/null 2>&1
-	echo "${ok} Complete compile nginx" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
+	echo "${ok} Finished compile Nginx" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 	
 	# make the package
 	make >/dev/null 2>&1
@@ -193,17 +193,16 @@ if [ "$NGINX_UPDATE" = '1' ]; then
 	echo "${info} Installing Nginx..." | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 	dpkg -i nginx_${NGINX_VERSION}-1_amd64.deb >/dev/null 2>&1
 	mv nginx_${NGINX_VERSION}-1_amd64.deb ../
-	echo "${ok} Complete install nginx" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
+	echo "${ok} Finished install Nginx" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 
 	echo "${info} Restore Nginx Folder..." | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 	cp -R /root/backup/$date/nginx/* /etc/nginx/
-	echo "${ok} Complete restore nginx" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
+	echo "${ok} Finished restore Nginx" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 
 	echo "${info} Starting Nginx..." | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 	systemctl -q start nginx.service
 
-	echo "${info} Update finished..." | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
-	echo "${ok} Complete without fail" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
+	echo "${ok} Finished: Nginx Update" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 fi 
 
 echo "${ok} All is done, bye dude!" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
