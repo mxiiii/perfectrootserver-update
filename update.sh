@@ -1,6 +1,6 @@
 #!/bin/bash
 # The perfect rootserver UPDATE
-# by Shoujii and TakeThisBitch @ elitepvpers
+# by Retender and TakeThisBitch @ elitepvpers
 # Repo: https://github.com/shoujii/perfectrootserver-update
 # Based on https://github.com/zypr/perfectrootserver & https://github.com/mxiiii/perfect_update
 # Thanks to Zypr and and mxiiii
@@ -28,7 +28,7 @@ date=$(date +%d-%m-%y-%h-%m)
 
 echo
 echo "$(yellowb +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+)"
-echo " $(textb Perfect) $(textb Rootserver) $(textb Update) $(textb by)" "$(cyan REtender / Shoujii)"
+echo " $(textb Perfect) $(textb Rootserver) $(textb Update) $(textb by)" "$(cyan REtender / TakeThisBitch)"
 echo "$(yellowb +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+)"
 echo
 
@@ -110,10 +110,10 @@ fi
 if [ "$NGINX_UPDATE" = '1' ]; then
 	command="nginx -v"
 	nginxv=$( ${command} 2>&1 )
-	nginxvfixed="echo ${nginxv:21}"
-	endoutput=$( ${nginxvfixed} 2>&1 )
+	nginxvcut="echo ${nginxv:21}"
+	nginxlocal=$( ${nginxvcut} 2>&1 )
 
-	if [[ $endoutput != $NGINX_VERSION ]]; then
+	if [[ $nginxlocal != $NGINX_VERSION ]]; then
 		echo "${info} Stop Nginx..." | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 		systemctl -q stop nginx.service
 
