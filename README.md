@@ -13,7 +13,7 @@ The Script will delete the rm /root/backup/ folder!!!
 
 [Get the latest release](https://github.com/shoujii/perfectrootserver-update/releases "Latest Release"):
 ```
-wget -O ~/perfectrootserver-update.tar.gz https://github.com/shoujii/perfectrootserver-update/archive/1.0.0.tar.gz
+wget -O ~/perfectrootserver-update.tar.gz https://github.com/shoujii/perfectrootserver-update/archive/1.2.2.tar.gz
 ```
 
 Extract:
