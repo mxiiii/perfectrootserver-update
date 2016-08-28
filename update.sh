@@ -98,7 +98,7 @@ if [ "$ROUNDCUBE_UPDATE" = '1' ]; then
 	wget https://github.com/roundcube/roundcubemail/releases/download/${ROUNDCUBE_VERSION}/roundcubemail-${ROUNDCUBE_VERSION}-complete.tar.gz >/dev/null 2>&1
 	tar xfvz roundcubemail-${ROUNDCUBE_VERSION}-complete.tar.gz >/dev/null 2>&1
 	cd roundcubemail-${ROUNDCUBE_VERSION} >/dev/null 2>&1
-	expect -c 'bin/installto.sh /var/www/mail/rc >/dev/null 2>&1'
+	expect -c "bin/installto.sh /var/www/mail/rc >/dev/null 2>&1"
 	expect "Do you want to continue? (y/N)"
 	send "y"
 	interact
@@ -111,6 +111,17 @@ fi
 ########################### UPDATE OPENSSH
 # ---------------------------------------------------------------------------------------- #
 if [ "$OPENSSH_UPDATE" = '1' ]; then
+	echo "${info} Backup OPENSSH config..." | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
+		#do not delete /backup/ folder
+		if [ ! -d /root/backup/ ]; then
+			mkdir /root/backup/ >/dev/null 2>&1
+		fi
+		
+	mkdir /root/backup/$date/ >/dev/null 2>&1
+	mkdir /root/backup/$date/openssh/ >/dev/null 2>&1
+	cp /etc/ssh/sshd_config /root/backup/$date/openssh/sshd_config
+	echo "${ok} Finished: OPENSSH config backup" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'	
+	
 	echo "${info} Downloading OpenSSH..." | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 	wget http://ftp.hostserver.de/pub/OpenBSD/OpenSSH/portable/openssh-${OPENSSH_VERSION}.tar.gz >/dev/null 2>&1
 	tar -xzf openssh-${OPENSSH_VERSION}.tar.gz >/dev/null 2>&1
@@ -118,6 +129,12 @@ if [ "$OPENSSH_UPDATE" = '1' ]; then
 	echo "${info} Compiling OpenSSH..." | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 	./configure --prefix=/usr --with-pam --with-zlib --with-ssl-engine --with-ssl-dir=/etc/ssl --sysconfdir=/etc/ssh >/dev/null 2>&1
 	make >/dev/null 2>&1 && mv /etc/ssh{,.bak} && make install >/dev/null 2>&1
+	
+	echo "${info} Restore OPENSSH config..." | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
+		cp /root/backup/$date/openssh/sshd_config /etc/ssh/sshd_config
+	echo "${ok} Finished restore OPENSSH config" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
+	systemctl -q restart ssh.service
+	echo "${ok} Finished: OPENSSH Update" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
 fi
 
 # ---------------------------------------------------------------------------------------- #
