@@ -98,10 +98,26 @@ if [ "$ROUNDCUBE_UPDATE" = '1' ]; then
 	wget https://github.com/roundcube/roundcubemail/releases/download/${ROUNDCUBE_VERSION}/roundcubemail-${ROUNDCUBE_VERSION}-complete.tar.gz >/dev/null 2>&1
 	tar xfvz roundcubemail-${ROUNDCUBE_VERSION}-complete.tar.gz >/dev/null 2>&1
 	cd roundcubemail-${ROUNDCUBE_VERSION} >/dev/null 2>&1
-	bin/installto.sh /var/www/mail/rc >/dev/null 2>&1
+	expect -c 'bin/installto.sh /var/www/mail/rc >/dev/null 2>&1'
+	expect "Do you want to continue? (y/N)"
+	send "y"
+	interact
 	rm -r /root/roundcubemail-${ROUNDCUBE_VERSION}/  >/dev/null 2>&1
 	rm -f /root/roundcubemail-${ROUNDCUBE_VERSION}-complete.tar.gz/ >/dev/null 2>&1
 	echo "${ok} Finished: Roundcube Update" | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
+fi
+
+# ---------------------------------------------------------------------------------------- #
+########################### UPDATE OPENSSH
+# ---------------------------------------------------------------------------------------- #
+if [ "$OPENSSH_UPDATE" = '1' ]; then
+	echo "${info} Downloading OpenSSH..." | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
+	wget http://ftp.hostserver.de/pub/OpenBSD/OpenSSH/portable/openssh-${OPENSSH_VERSION}.tar.gz >/dev/null 2>&1
+	tar -xzf openssh-${OPENSSH_VERSION}.tar.gz >/dev/null 2>&1
+	cd openssh-${OPENSSH_VERSION}
+	echo "${info} Compiling OpenSSH..." | awk '{ print strftime("[%H:%M:%S] |"), $0 }'
+	./configure --prefix=/usr --with-pam --with-zlib --with-ssl-engine --with-ssl-dir=/etc/ssl --sysconfdir=/etc/ssh >/dev/null 2>&1
+	make >/dev/null 2>&1 && mv /etc/ssh{,.bak} && make install >/dev/null 2>&1
 fi
 
 # ---------------------------------------------------------------------------------------- #
